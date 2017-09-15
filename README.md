@@ -17,7 +17,7 @@ func bar(arg string) error {
 func foo(arg string) error {
     err := bar(arg)
     if err != nil {
-        return karma.Context("method", "bar").Reason(err)
+        return karma.Describe("method", "bar").Reason(err)
     }
 }
 
