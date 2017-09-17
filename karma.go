@@ -117,7 +117,9 @@ func Format(
 // message was specified, then only current message will be returned.
 func (karma Karma) String() string {
 	karma.Context.Walk(func(name string, value interface{}) {
-		karma = Push(karma, Push(fmt.Sprintf("%s: %s", name, value)))
+		karma = Push(karma, Push(
+			fmt.Sprintf("%s: %s", name, fmt.Sprint(value)),
+		))
 	})
 
 	switch value := karma.Reason.(type) {

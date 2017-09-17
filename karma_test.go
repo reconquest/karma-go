@@ -199,6 +199,21 @@ func TestContext_CanAddToReasonError(t *testing.T) {
 	)
 }
 
+func TestContext_CanUseNonStringValue(t *testing.T) {
+	test := assert.New(t)
+
+	test.EqualError(
+		Describe("code", 88).Format(
+			nil,
+			"unable to run external command",
+		),
+		output(
+			"unable to run external command",
+			"└─ code: 88",
+		),
+	)
+}
+
 type customError struct {
 	Text   string
 	Reason error
