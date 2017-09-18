@@ -214,6 +214,28 @@ func TestContext_CanUseNonStringValue(t *testing.T) {
 	)
 }
 
+func TestContext_FieldsNotSorted(t *testing.T) {
+	test := assert.New(t)
+
+	test.EqualError(
+		Describe("start_time", 0).
+			Describe("end_time", 1).
+			Describe("precision", 2).
+			Describe("offset", 3).
+			Format(
+				nil,
+				"fields are not sorted",
+			),
+		output(
+			"fields are not sorted",
+			"├─ start_time: 0",
+			"├─ end_time: 1",
+			"├─ precision: 2",
+			"└─ offset: 3",
+		),
+	)
+}
+
 type customError struct {
 	Text   string
 	Reason error

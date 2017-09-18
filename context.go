@@ -17,13 +17,17 @@ func (context *Context) Describe(
 	key string,
 	value interface{},
 ) *Context {
-	previous := &Context{
-		Key:      key,
-		Value:    value,
-		Previous: context.Previous,
-	}
+	if context.Previous != nil {
+		context.Previous.Describe(key, value)
+	} else {
+		previous := &Context{
+			Key:      key,
+			Value:    value,
+			Previous: context.Previous,
+		}
 
-	context.Previous = previous
+		context.Previous = previous
+	}
 
 	return context
 }
