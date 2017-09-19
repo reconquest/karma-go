@@ -17,19 +17,31 @@ func (context *Context) Describe(
 	key string,
 	value interface{},
 ) *Context {
-	if context.Previous != nil {
-		context.Previous.Describe(key, value)
-	} else {
-		previous := &Context{
-			Key:      key,
-			Value:    value,
-			Previous: context.Previous,
-		}
+	cloned := context.clone()
 
-		context.Previous = previous
+	root := cloned
+	for root.Previous != nil {
+		root = root.Previous
 	}
 
-	return context
+	root.Previous = &Context{
+		Key:   key,
+		Value: value,
+	}
+
+	return cloned
+}
+
+func (context *Context) clone() *Context {
+	if context == nil {
+		return nil
+	}
+
+	return &Context{
+		Key:      context.Key,
+		Value:    context.Value,
+		Previous: context.Previous.clone(),
+	}
 }
 
 // Format produces context-rich hierarchical message, which will include all
