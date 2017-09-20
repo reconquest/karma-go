@@ -260,6 +260,24 @@ func TestContext_FieldsNotSorted(t *testing.T) {
 	)
 }
 
+func TestContext_CanOperateOnNilContext(t *testing.T) {
+	test := assert.New(t)
+
+	var void *Context
+
+	void = void.Describe("space", 1)
+	void = void.Describe("time", 2)
+
+	test.EqualError(
+		void.Format(nil, "the story"),
+		output(
+			"the story",
+			"├─ space: 1",
+			"└─ time: 2",
+		),
+	)
+}
+
 type customError struct {
 	Text   string
 	Reason error

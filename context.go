@@ -6,42 +6,37 @@ import (
 
 // Context is a element of key-value linked list of message contexts.
 type Context struct {
-	Key      string
-	Value    interface{}
-	Previous *Context
+	Key   string
+	Value interface{}
+	Next  *Context
 }
 
 // Context adds new key-value context pair to current context list and return
-// current context list.
+// new context list.
 func (context *Context) Describe(
 	key string,
 	value interface{},
 ) *Context {
-	cloned := context.clone()
-
-	root := cloned
-	for root.Previous != nil {
-		root = root.Previous
+	if context == nil {
+		return &Context{
+			Key:   key,
+			Value: value,
+		}
 	}
 
-	root.Previous = &Context{
+	head := *context
+
+	pointer := &head
+	for pointer.Next != nil {
+		pointer = pointer.Next
+	}
+
+	pointer.Next = &Context{
 		Key:   key,
 		Value: value,
 	}
 
-	return cloned
-}
-
-func (context *Context) clone() *Context {
-	if context == nil {
-		return nil
-	}
-
-	return &Context{
-		Key:      context.Key,
-		Value:    context.Value,
-		Previous: context.Previous.clone(),
-	}
+	return &head
 }
 
 // Format produces context-rich hierarchical message, which will include all
@@ -84,8 +79,8 @@ func (context *Context) Walk(callback func(string, interface{})) {
 
 	callback(context.Key, context.Value)
 
-	if context.Previous != nil {
-		context.Previous.Walk(callback)
+	if context.Next != nil {
+		context.Next.Walk(callback)
 	}
 }
 

@@ -113,12 +113,24 @@ func Format(
 	}
 }
 
+// ContextValueFormatter returns string representation of context value when
+// Format() is called on Karma struct.
+var ContextValueFormatter = func(value interface{}) string {
+	if value, ok := value.(string); ok {
+		if value == "" {
+			return "<empty>"
+		}
+	}
+
+	return fmt.Sprint(value)
+}
+
 // Karma returns hierarchical string representation. If no nested
 // message was specified, then only current message will be returned.
 func (karma Karma) String() string {
 	karma.Context.Walk(func(name string, value interface{}) {
 		karma = Push(karma, Push(
-			fmt.Sprintf("%s: %s", name, fmt.Sprint(value)),
+			fmt.Sprintf("%s: %s", name, ContextValueFormatter(value)),
 		))
 	})
 
