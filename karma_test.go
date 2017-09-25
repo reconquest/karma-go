@@ -217,13 +217,14 @@ func TestContext_CanUseNonStringValue(t *testing.T) {
 func TestContext_DontChangeSelf(t *testing.T) {
 	test := assert.New(t)
 
-	void := Describe("void", 0)
+	void := Describe("void", 0).Describe("emptiness", 0)
 
 	test.EqualError(
 		void.Describe("space", 1).Format(nil, "the story"),
 		output(
 			"the story",
 			"├─ void: 0",
+			"├─ emptiness: 0",
 			"└─ space: 1",
 		),
 	)
@@ -233,30 +234,10 @@ func TestContext_DontChangeSelf(t *testing.T) {
 		output(
 			"the story",
 			"├─ void: 0",
+			"├─ emptiness: 0",
 			"└─ time: 1",
 		),
 	)
-}
-
-func TestContext_DontChangeSelfInCall(t *testing.T) {
-	test := assert.New(t)
-
-	void := Describe("void", "0").Describe("space", "1")
-
-	fn := func(number int) {
-		test.EqualError(
-			void.Describe("call", number).Format(nil, "the story"),
-			output(
-				"the story",
-				"├─ void: 0",
-				"├─ space: 1",
-				"└─ call: "+fmt.Sprint(number),
-			),
-		)
-	}
-
-	fn(1)
-	fn(2)
 }
 
 func TestContext_FieldsNotSorted(t *testing.T) {

@@ -28,6 +28,9 @@ func (context *Context) Describe(
 
 	pointer := &head
 	for pointer.Next != nil {
+		copy := *pointer.Next
+		pointer.Next = &copy
+
 		pointer = pointer.Next
 	}
 
