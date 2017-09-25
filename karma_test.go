@@ -238,6 +238,27 @@ func TestContext_DontChangeSelf(t *testing.T) {
 	)
 }
 
+func TestContext_DontChangeSelfInCall(t *testing.T) {
+	test := assert.New(t)
+
+	void := Describe("void", "0").Describe("space", "1")
+
+	fn := func(number int) {
+		test.EqualError(
+			void.Describe("call", number).Format(nil, "the story"),
+			output(
+				"the story",
+				"├─ void: 0",
+				"├─ space: 1",
+				"└─ call: "+fmt.Sprint(number),
+			),
+		)
+	}
+
+	fn(1)
+	fn(2)
+}
+
 func TestContext_FieldsNotSorted(t *testing.T) {
 	test := assert.New(t)
 
