@@ -1,6 +1,7 @@
 package karma
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -126,6 +127,39 @@ func TestCanSetBranchIndent(t *testing.T) {
 			"└─ second",
 			"└─ first",
 		),
+	)
+}
+
+func TestCanMarshalToJSON(t *testing.T) {
+	test := assert.New(t)
+
+	item := Describe("host", "example.com").Format(
+		Describe("os", "linux").Reason(
+			"system error",
+		),
+		"unable to resolve",
+	)
+
+	marshalled, err := json.MarshalIndent(item, ``, `  `)
+	test.NoError(err)
+	test.JSONEq(string(marshalled), `{
+		  "reason": {
+			"reason": "system error",
+			"context": [
+			  {
+				"key": "os",
+				"value": "linux"
+			  }
+			]
+		  },
+		  "message": "unable to resolve",
+		  "context": [
+			{
+			  "key": "host",
+			  "value": "example.com"
+			}
+		  ]
+		}`,
 	)
 }
 

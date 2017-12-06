@@ -1,6 +1,7 @@
 package karma
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -97,4 +98,20 @@ func (context *Context) GetKeyValuePairs() []interface{} {
 	})
 
 	return pairs
+}
+
+func (context *Context) MarshalJSON() ([]byte, error) {
+	linear := []interface{}{}
+
+	context.Walk(func(key string, value interface{}) {
+		linear = append(linear, struct {
+			Key   string      `json:"key"`
+			Value interface{} `json:"value"`
+		}{
+			key,
+			value,
+		})
+	})
+
+	return json.Marshal(linear)
 }

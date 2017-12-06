@@ -72,15 +72,15 @@ var (
 // Karma represents hierarchy message, linked with nested message.
 type Karma struct {
 	// Reason of message, which can be Karma as well.
-	Reason Reason
+	Reason Reason `json:"reason"`
 
 	// Message is formatted message, which will be returned when String()
 	// will be invoked.
-	Message string
+	Message string `json:"message,omitempty"`
 
 	// Context is a key-pair linked list, which represents runtime context
 	// of the situtation.
-	Context *Context
+	Context *Context `json:"context"`
 }
 
 // Hierarchical represents interface, which methods will be used instead
