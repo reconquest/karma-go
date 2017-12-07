@@ -162,6 +162,28 @@ func TestCanMarshalToJSON(t *testing.T) {
 		}`,
 	)
 }
+func TestCanMarshalErrorsToJSON(t *testing.T) {
+	test := assert.New(t)
+
+	item := Describe("host", "example.com").Format(
+		errors.New("access denied"),
+		"unable to connect",
+	)
+
+	marshalled, err := json.MarshalIndent(item, ``, `  `)
+	test.NoError(err)
+	test.JSONEq(string(marshalled), `{
+		  "reason": "access denied",
+		  "message": "unable to connect",
+		  "context": [
+			{
+			  "key": "host",
+			  "value": "example.com"
+			}
+		  ]
+		}`,
+	)
+}
 
 func TestContext_CanAddMultipleKeyValues(t *testing.T) {
 	test := assert.New(t)

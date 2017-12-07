@@ -13,6 +13,7 @@
 package karma // import "github.com/reconquest/karma-go"
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"unicode"
@@ -72,15 +73,15 @@ var (
 // Karma represents hierarchy message, linked with nested message.
 type Karma struct {
 	// Reason of message, which can be Karma as well.
-	Reason Reason `json:"reason"`
+	Reason Reason
 
 	// Message is formatted message, which will be returned when String()
 	// will be invoked.
-	Message string `json:"message,omitempty"`
+	Message string
 
 	// Context is a key-pair linked list, which represents runtime context
 	// of the situtation.
-	Context *Context `json:"context"`
+	Context *Context
 }
 
 // Hierarchical represents interface, which methods will be used instead
@@ -193,6 +194,33 @@ func (karma Karma) Descend(callback func(Karma)) {
 			reason.Descend(callback)
 		}
 	}
+}
+
+func (karma Karma) MarshalJSON() ([]byte, error) {
+	result := struct {
+		Reason  json.RawMessage `json:"reason,omitempty"`
+		Message string          `json:"message,omitempty"`
+		Context *Context        `json:"context"`
+	}{
+		Message: karma.Message,
+		Context: karma.Context,
+	}
+
+	var err error
+
+	switch reason := karma.Reason.(type) {
+	case json.Marshaler:
+		result.Reason, err = json.Marshal(reason)
+	case error:
+		result.Reason, err = json.Marshal(reason.Error())
+	default:
+		result.Reason, err = json.Marshal(reason)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(result)
 }
 
 // Push creates new hierarchy message with multiple branches separated by
