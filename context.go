@@ -115,3 +115,25 @@ func (context *Context) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(linear)
 }
+
+func (context *Context) UnmarshalJSON(data []byte) error {
+	var container []struct {
+		Key   string      `json:"key"`
+		Value interface{} `json:"value"`
+	}
+
+	err := json.Unmarshal(data, &container)
+	if err != nil {
+		return err
+	}
+
+	var result *Context
+
+	for _, item := range container {
+		result = result.Describe(item.Key, item.Value)
+	}
+
+	*context = *result
+
+	return nil
+}

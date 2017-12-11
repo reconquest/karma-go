@@ -100,6 +100,12 @@ type Hierarchical interface {
 // Reason is either `error` or string.
 type Reason interface{}
 
+type jsonRepresentation struct {
+	Reason  json.RawMessage `json:"reason,omitempty"`
+	Message string          `json:"message,omitempty"`
+	Context *Context        `json:"context"`
+}
+
 // Format creates new hierarchical message.
 //
 // With reason == nil call will be equal to `fmt.Printf()`.
@@ -197,11 +203,7 @@ func (karma Karma) Descend(callback func(Karma)) {
 }
 
 func (karma Karma) MarshalJSON() ([]byte, error) {
-	result := struct {
-		Reason  json.RawMessage `json:"reason,omitempty"`
-		Message string          `json:"message,omitempty"`
-		Context *Context        `json:"context"`
-	}{
+	result := jsonRepresentation{
 		Message: karma.Message,
 		Context: karma.Context,
 	}
@@ -221,6 +223,34 @@ func (karma Karma) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(result)
+}
+
+func (karma *Karma) UnmarshalJSON(data []byte) error {
+	var container jsonRepresentation
+
+	err := json.Unmarshal(data, &container)
+	if err != nil {
+		return err
+	}
+
+	var reason Karma
+
+	if len(container.Reason) > 0 {
+		err = json.Unmarshal(container.Reason, &reason)
+		if err != nil {
+			err = json.Unmarshal(container.Reason, &karma.Reason)
+			if err != nil {
+				return err
+			}
+		} else {
+			karma.Reason = reason
+		}
+	}
+
+	karma.Message = container.Message
+	karma.Context = container.Context
+
+	return nil
 }
 
 // Push creates new hierarchy message with multiple branches separated by

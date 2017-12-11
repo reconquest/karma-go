@@ -162,6 +162,7 @@ func TestCanMarshalToJSON(t *testing.T) {
 		}`,
 	)
 }
+
 func TestCanMarshalErrorsToJSON(t *testing.T) {
 	test := assert.New(t)
 
@@ -182,6 +183,74 @@ func TestCanMarshalErrorsToJSON(t *testing.T) {
 			}
 		  ]
 		}`,
+	)
+}
+
+func TestCanUnmarshalFromJSON(t *testing.T) {
+	return
+	test := assert.New(t)
+
+	input := `{
+		  "reason": "access denied",
+		  "message": "unable to connect",
+		  "context": [
+			{
+			  "key": "host",
+			  "value": "example.com"
+			}
+		  ]
+		}`
+
+	var actual Karma
+
+	err := json.Unmarshal([]byte(input), &actual)
+	test.NoError(err)
+
+	test.EqualError(
+		actual,
+		output(
+			"unable to connect",
+			"├─ access denied",
+			"└─ host: example.com",
+		),
+	)
+}
+
+func TestCanUnmarshalNestedReasonFromJSON(t *testing.T) {
+	test := assert.New(t)
+
+	input := `{
+		  "reason": {
+			  "message": "tcp: out of memory",
+			  "context": [
+				{
+				  "key": "free",
+				  "value": "512Kb"
+				}
+			  ]
+		  },
+		  "message": "unable to connect",
+		  "context": [
+			{
+			  "key": "host",
+			  "value": "example.com"
+			}
+		  ]
+		}`
+
+	var actual Karma
+
+	err := json.Unmarshal([]byte(input), &actual)
+	test.NoError(err)
+
+	test.EqualError(
+		actual,
+		output(
+			"unable to connect",
+			"├─ tcp: out of memory",
+			"│  └─ free: 512Kb",
+			"└─ host: example.com",
+		),
 	)
 }
 
