@@ -7,9 +7,13 @@ import (
 
 // Context is a element of key-value linked list of message contexts.
 type Context struct {
-	Key   string
-	Value interface{}
-	Next  *Context
+	KeyValue
+	Next *Context
+}
+
+type KeyValue struct {
+	Key   string      `json:"key"`
+	Value interface{} `json:"value"`
 }
 
 // Context adds new key-value context pair to current context list and return
@@ -20,8 +24,10 @@ func (context *Context) Describe(
 ) *Context {
 	if context == nil {
 		return &Context{
-			Key:   key,
-			Value: value,
+			KeyValue: KeyValue{
+				Key:   key,
+				Value: value,
+			},
 		}
 	}
 
@@ -36,8 +42,10 @@ func (context *Context) Describe(
 	}
 
 	pointer.Next = &Context{
-		Key:   key,
-		Value: value,
+		KeyValue: KeyValue{
+			Key:   key,
+			Value: value,
+		},
 	}
 
 	return &head
@@ -100,14 +108,22 @@ func (context *Context) GetKeyValuePairs() []interface{} {
 	return pairs
 }
 
+// GetKeyValues returns context as slice of key-values.
+func (context *Context) GetKeyValues() []KeyValue {
+	result := []KeyValue{}
+
+	context.Walk(func(name string, value interface{}) {
+		result = append(result, KeyValue{name, value})
+	})
+
+	return result
+}
+
 func (context *Context) MarshalJSON() ([]byte, error) {
 	linear := []interface{}{}
 
 	context.Walk(func(key string, value interface{}) {
-		linear = append(linear, struct {
-			Key   string      `json:"key"`
-			Value interface{} `json:"value"`
-		}{
+		linear = append(linear, KeyValue{
 			key,
 			value,
 		})
@@ -117,10 +133,7 @@ func (context *Context) MarshalJSON() ([]byte, error) {
 }
 
 func (context *Context) UnmarshalJSON(data []byte) error {
-	var container []struct {
-		Key   string      `json:"key"`
-		Value interface{} `json:"value"`
-	}
+	var container []KeyValue
 
 	err := json.Unmarshal(data, &container)
 	if err != nil {

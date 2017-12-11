@@ -273,8 +273,10 @@ func Push(reason Reason, reasons ...Reason) Karma {
 // hierarchical message.
 func Describe(key string, value interface{}) *Context {
 	return &Context{
-		Key:   key,
-		Value: value,
+		KeyValue: KeyValue{
+			Key:   key,
+			Value: value,
+		},
 	}
 }
 
