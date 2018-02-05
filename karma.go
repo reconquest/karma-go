@@ -108,7 +108,7 @@ type jsonRepresentation struct {
 
 // Format creates new hierarchical message.
 //
-// With reason == nil call will be equal to `fmt.Printf()`.
+// With reason == nil call will be equal to `fmt.Errorf()`.
 func Format(
 	reason Reason,
 	message string,
@@ -160,6 +160,7 @@ func (karma Karma) String() string {
 	}
 }
 
+// Error implements error interface, Karma can be returned as error.
 func (karma Karma) Error() string {
 	return karma.String()
 }
@@ -278,6 +279,50 @@ func Describe(key string, value interface{}) *Context {
 			Value: value,
 		},
 	}
+}
+
+// Contains returns true when branch is found in reasons of given chain. Or
+// chain has the same value as branch error.
+// Useful when you work with result of multi-level error and just wanted to
+// check that error contains os.ErrNoExist.
+func Contains(chain Reason, branch Reason) bool {
+	karma, ok := getKarma(chain)
+	if ok {
+		return contains(karma, branch)
+	}
+
+	return fmt.Sprint(chain) == fmt.Sprint(branch)
+}
+
+func contains(karma Karma, reason Reason) bool {
+	reasonString := fmt.Sprint(reason)
+	for _, nested := range karma.GetReasons() {
+		subkarma, ok := getKarma(nested)
+		if ok {
+			if contains(subkarma, reason) {
+				return true
+			}
+		} else {
+			if fmt.Sprint(nested) == reasonString {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func getKarma(reason Reason) (Karma, bool) {
+	karma, ok := reason.(Karma)
+	if !ok {
+		var pointer *Karma
+		pointer, ok = reason.(*Karma)
+		if ok {
+			karma = *pointer
+		}
+	}
+
+	return karma, ok
 }
 
 func formatReasons(karma Karma, reasons []Reason) string {

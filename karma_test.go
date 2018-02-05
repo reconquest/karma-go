@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -403,6 +404,63 @@ func TestContext_CanOperateOnNilContext(t *testing.T) {
 			"└─ time: 2",
 		),
 	)
+}
+
+func TestContains_ReturnsTrueWhenFoundSameError(t *testing.T) {
+	test := assert.New(t)
+
+	top := Format(
+		errors.New("root"),
+		"format for root",
+	)
+
+	err := Reason(top)
+
+	test.True(Contains(err, errors.New("root")))
+}
+
+func TestContains_ReturnsTrueWhenFoundSamePredefinedError(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := Format(
+		os.ErrNotExist,
+		"format for root",
+	)
+
+	err1 := Format(err0, "level 1")
+	err2 := Format(err1, "level 2")
+
+	test.True(Contains(err2, os.ErrNotExist))
+}
+
+func TestContains_ReturnsTrueForSameError(t *testing.T) {
+	test := assert.New(t)
+
+	err := errors.New("pain")
+
+	test.True(Contains(err, errors.New("pain")))
+}
+
+func TestContains_ReturnsTrueForSameErrorString(t *testing.T) {
+	test := assert.New(t)
+
+	err := errors.New("pain")
+
+	test.True(Contains(err, "pain"))
+}
+
+func TestContains_ReturnsFalseWhenNotFoundPredefinedError(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := Format(
+		os.ErrNotExist,
+		"format for root",
+	)
+
+	err1 := Format(err0, "level 1")
+	err2 := Format(err1, "level 2")
+
+	test.False(Contains(err2, os.ErrInvalid))
 }
 
 type customError struct {
