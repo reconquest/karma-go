@@ -294,7 +294,7 @@ func Contains(chain Reason, branch Reason) bool {
 	return fmt.Sprint(chain) == fmt.Sprint(branch)
 }
 
-func contains(karma Karma, reason Reason) bool {
+func contains(karma *Karma, reason Reason) bool {
 	reasonString := fmt.Sprint(reason)
 	for _, nested := range karma.GetReasons() {
 		subkarma, ok := getKarma(nested)
@@ -312,17 +312,18 @@ func contains(karma Karma, reason Reason) bool {
 	return false
 }
 
-func getKarma(reason Reason) (Karma, bool) {
+func getKarma(reason Reason) (*Karma, bool) {
 	karma, ok := reason.(Karma)
-	if !ok {
-		var pointer *Karma
-		pointer, ok = reason.(*Karma)
-		if ok {
-			karma = *pointer
-		}
+	if ok {
+		return &karma, true
 	}
 
-	return karma, ok
+	pointer, ok := reason.(*Karma)
+	if ok {
+		return pointer, true
+	}
+
+	return nil, false
 }
 
 func formatReasons(karma Karma, reasons []Reason) string {
