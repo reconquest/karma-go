@@ -463,6 +463,19 @@ func TestContains_ReturnsFalseWhenNotFoundPredefinedError(t *testing.T) {
 	test.False(Contains(err2, os.ErrInvalid))
 }
 
+func TestContext_DoesNotPanicOnFormatOnNilContext(t *testing.T) {
+	test := assert.New(t)
+
+	var void *Context
+
+	test.EqualError(
+		void.Format(nil, "emptiness"),
+		output(
+			"emptiness",
+		),
+	)
+}
+
 type customError struct {
 	Text   string
 	Reason error

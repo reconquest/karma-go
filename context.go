@@ -53,7 +53,7 @@ func (context *Context) Describe(
 
 // Format produces context-rich hierarchical message, which will include all
 // previously declared context key-value pairs.
-func (context Context) Format(
+func (context *Context) Format(
 	reason Reason,
 	message string,
 	args ...interface{},
@@ -61,7 +61,7 @@ func (context Context) Format(
 	return Karma{
 		Message: fmt.Sprintf(message, args...),
 		Reason:  reason,
-		Context: &context,
+		Context: context,
 	}
 }
 
