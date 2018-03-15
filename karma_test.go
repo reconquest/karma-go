@@ -476,6 +476,74 @@ func TestContext_DoesNotPanicOnFormatOnNilContext(t *testing.T) {
 	)
 }
 
+type customSimpleError struct {
+	text string
+}
+
+func (err customSimpleError) Error() string {
+	return err.text
+}
+
+func TestFind_TrueReferenceToObject(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := customSimpleError{"custom"}
+	err1 := Format(err0, "wrap for custom")
+
+	var custom customSimpleError
+	result := Find(err1, &custom)
+	test.True(result)
+	test.Equal(custom.text, "custom")
+}
+
+func TestFind_TrueReferenceToReference(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := &customSimpleError{"custom"}
+	err1 := Format(err0, "wrap for custom")
+
+	var custom *customSimpleError
+	result := Find(err1, &custom)
+	test.True(result)
+	test.Equal(custom.text, "custom")
+}
+
+func TestFind_FalseReferenceToReference_BecauseObject(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := customSimpleError{"custom"}
+	err1 := Format(err0, "wrap for custom")
+
+	var custom *customSimpleError
+	result := Find(err1, &custom)
+	test.False(result)
+	test.Nil(custom)
+}
+
+func TestFind_FalseReferenceToObject_BecauseReference(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := &customSimpleError{"custom"}
+	err1 := Format(err0, "wrap for custom")
+
+	var custom customSimpleError
+	result := Find(err1, &custom)
+	test.False(result)
+	test.Empty(custom.text)
+}
+
+func TestFind_TrueNoReferenceButEmptyTextBecauseUnaddressable(t *testing.T) {
+	test := assert.New(t)
+
+	err0 := customSimpleError{"custom"}
+	err1 := Format(err0, "wrap for custom")
+
+	var custom customSimpleError
+	result := Find(err1, custom)
+	test.True(result)
+	test.Empty(custom.text)
+}
+
 type customError struct {
 	Text   string
 	Reason error

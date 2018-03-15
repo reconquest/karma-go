@@ -15,6 +15,7 @@ package karma // import "github.com/reconquest/karma-go"
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"unicode"
 )
@@ -279,6 +280,54 @@ func Describe(key string, value interface{}) *Context {
 			Value: value,
 		},
 	}
+}
+
+// Find typed object in given chain of reasons, returns true if reason with the
+// same type found, if typed object is addressable, value will be stored in it.
+func Find(err Reason, typed interface{}) bool {
+	indirect := reflect.Indirect(reflect.ValueOf(typed))
+	indirectType := indirect.Type()
+
+	karma, ok := getKarma(err)
+	if ok {
+		return find(karma, typed, indirect, indirectType)
+	}
+
+	same := reflect.TypeOf(err) == indirectType
+	if same {
+		if indirect.CanAddr() {
+			indirect.Set(reflect.ValueOf(err))
+		}
+	}
+
+	return same
+}
+
+func find(
+	karma *Karma,
+	typed interface{},
+	indirect reflect.Value,
+	indirectType reflect.Type,
+) bool {
+	for _, nested := range karma.GetReasons() {
+		subkarma, ok := getKarma(nested)
+		if ok {
+			if find(subkarma, typed, indirect, indirectType) {
+				return true
+			}
+		} else {
+			same := reflect.TypeOf(nested) == indirectType
+			if same {
+				if indirect.CanAddr() {
+					indirect.Set(reflect.ValueOf(nested))
+				}
+			}
+
+			return same
+		}
+	}
+
+	return false
 }
 
 // Contains returns true when branch is found in reasons of given chain. Or
