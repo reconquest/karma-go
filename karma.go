@@ -104,7 +104,7 @@ type Reason interface{}
 type jsonRepresentation struct {
 	Reason  json.RawMessage `json:"reason,omitempty"`
 	Message string          `json:"message,omitempty"`
-	Context *Context        `json:"context"`
+	Context *Context        `json:"context,omitempty"`
 }
 
 // Format creates new hierarchical message.
