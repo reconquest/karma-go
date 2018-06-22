@@ -71,6 +71,10 @@ var (
 	BranchIndent = 3
 )
 
+var (
+	branchIndentation = "   "
+)
+
 // Karma represents hierarchy message, linked with nested message.
 type Karma struct {
 	// Reason of message, which can be Karma as well.
@@ -138,7 +142,7 @@ var ContextValueFormatter = func(value interface{}) string {
 func (karma Karma) String() string {
 	karma.Context.Walk(func(name string, value interface{}) {
 		karma = Push(karma, Push(
-			fmt.Sprintf("%s: %s", name, ContextValueFormatter(value)),
+			name+": "+ContextValueFormatter(value),
 		))
 	})
 
@@ -153,11 +157,34 @@ func (karma Karma) String() string {
 		return karma.Message + "\n" +
 			BranchDelimiter +
 			strings.Replace(
-				fmt.Sprintf("%s", karma.Reason),
+				stringReason(karma.Reason),
 				"\n",
-				"\n"+strings.Repeat(" ", BranchIndent),
+				"\n"+getBranchIndentation(),
 				-1,
 			)
+	}
+}
+
+func getBranchIndentation() string {
+	if len(branchIndentation) != BranchIndent {
+		branchIndentation = strings.Repeat(" ", BranchIndent)
+	}
+	return branchIndentation
+}
+
+func stringReason(reason Reason) string {
+	switch typed := reason.(type) {
+	case []byte:
+		return string(typed)
+
+	case string:
+		return typed
+
+	case error:
+		return typed.Error()
+
+	default:
+		return fmt.Sprint(typed)
 	}
 }
 
@@ -397,13 +424,13 @@ func formatReasons(karma Karma, reasons []Reason) string {
 		}
 	}
 
-	for index, reason := range reasons {
-		var (
-			splitter      = BranchSplitter
-			chainer       = BranchChainer
-			chainerLength = len([]rune(BranchChainer))
-		)
+	var (
+		chainerLength = len([]rune(BranchChainer))
+		splitter      = BranchSplitter
+		chainer       = BranchChainer
+	)
 
+	for index, reason := range reasons {
 		if index == len(reasons)-1 {
 			splitter = BranchDelimiter
 			chainer = strings.Repeat(" ", chainerLength)
@@ -426,7 +453,7 @@ func formatReasons(karma Karma, reasons []Reason) string {
 		}
 
 		message += strings.Replace(
-			fmt.Sprint(reason),
+			stringReason(reason),
 			"\n",
 			"\n"+indentation,
 			-1,
