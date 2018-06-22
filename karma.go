@@ -265,10 +265,19 @@ func Push(reason Reason, reasons ...Reason) Karma {
 		}
 	}
 
+	newReasons := parent.GetReasons()
+
+	for _, reason := range reasons {
+		if reason != nil {
+			newReasons = append(newReasons, reason)
+		}
+	}
+
 	return Karma{
 		Message: parent.Message,
-		Reason:  append(parent.GetReasons(), reasons...),
+		Reason:  newReasons,
 	}
+
 }
 
 // Describe creates new context list, which can be used to produce context-rich
