@@ -13,6 +13,7 @@
 package karma // import "github.com/reconquest/karma-go"
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -376,7 +377,7 @@ func Contains(chain Reason, branch Reason) bool {
 		return contains(karma, branch)
 	}
 
-	return fmt.Sprint(chain) == fmt.Sprint(branch)
+	return stringReason(chain) == stringReason(branch)
 }
 
 func contains(karma *Karma, reason Reason) bool {
@@ -412,7 +413,7 @@ func getKarma(reason Reason) (*Karma, bool) {
 }
 
 func formatReasons(karma Karma, reasons []Reason) string {
-	message := karma.Message
+	message := bytes.NewBufferString(karma.Message)
 
 	prolongate := false
 	for _, reason := range reasons {
@@ -428,7 +429,16 @@ func formatReasons(karma Karma, reasons []Reason) string {
 		chainerLength = len([]rune(BranchChainer))
 		splitter      = BranchSplitter
 		chainer       = BranchChainer
+
+		prolongator = "\n" + strings.TrimRightFunc(
+			chainer, unicode.IsSpace,
+		)
 	)
+
+	indentation := chainer
+	if BranchIndent >= chainerLength {
+		indentation += strings.Repeat(" ", BranchIndent-chainerLength)
+	}
 
 	for index, reason := range reasons {
 		if index == len(reasons)-1 {
@@ -436,30 +446,22 @@ func formatReasons(karma Karma, reasons []Reason) string {
 			chainer = strings.Repeat(" ", chainerLength)
 		}
 
-		indentation := chainer
-		if BranchIndent >= chainerLength {
-			indentation += strings.Repeat(" ", BranchIndent-chainerLength)
+		if message.Len() != 0 {
+			message.WriteString("\n")
+			message.WriteString(splitter)
 		}
 
-		prolongator := ""
-		if prolongate && index < len(reasons)-1 {
-			prolongator = "\n" + strings.TrimRightFunc(
-				chainer, unicode.IsSpace,
-			)
-		}
-
-		if message != "" {
-			message = message + "\n" + splitter
-		}
-
-		message += strings.Replace(
+		message.WriteString(strings.Replace(
 			stringReason(reason),
 			"\n",
 			"\n"+indentation,
 			-1,
-		)
-		message += prolongator
+		))
+
+		if prolongate && index < len(reasons)-1 {
+			message.WriteString(prolongator)
+		}
 	}
 
-	return message
+	return message.String()
 }
