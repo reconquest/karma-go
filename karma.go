@@ -443,7 +443,11 @@ func formatReasons(karma Karma, reasons []Reason) string {
 	for index, reason := range reasons {
 		if index == len(reasons)-1 {
 			splitter = BranchDelimiter
-			chainer = strings.Repeat(" ", chainerLength)
+			if chainerLength < BranchIndent {
+				chainerLength = BranchIndent
+			}
+
+			indentation = strings.Repeat(" ", chainerLength)
 		}
 
 		if message.Len() != 0 {

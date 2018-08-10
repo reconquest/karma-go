@@ -305,6 +305,26 @@ func TestContext_CanAddToRootError(t *testing.T) {
 	)
 }
 
+func TestContext_CanAddMultilineValue(t *testing.T) {
+	test := assert.New(t)
+
+	test.EqualError(
+		Describe("host", "unable to connect\ntemporary unavailable").Format(
+			Describe("context", "a\nb").Reason("system error"),
+			"unable to resolve",
+		),
+		output(
+			"unable to resolve",
+			"├─ system error",
+			"│  └─ context: a",
+			"│     b",
+			"│",
+			"└─ host: unable to connect",
+			"   temporary unavailable",
+		),
+	)
+}
+
 func TestContext_CanAddToReasonError(t *testing.T) {
 	test := assert.New(t)
 
