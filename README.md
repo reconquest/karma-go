@@ -28,3 +28,7 @@ fmt.Println(foo("hello"))
 // arg is invalid: hello
 // └─ method: bar
 ```
+
+# License
+
+This project is licensed under the terms of the MIT license.
