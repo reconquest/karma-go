@@ -222,12 +222,14 @@ func (karma Karma) GetContext() *Context {
 }
 
 // Descend calls specified callback for every nested hierarchical message.
-func (karma Karma) Descend(callback func(Karma)) {
+func (karma Karma) Descend(callback func(Reason)) {
 	for _, reason := range karma.GetReasons() {
-		if reason, ok := reason.(Karma); ok {
+		switch reason := reason.(type) {
+		case Karma:
 			callback(reason)
-
 			reason.Descend(callback)
+		default:
+			callback(reason)
 		}
 	}
 }

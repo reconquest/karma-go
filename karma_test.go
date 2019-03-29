@@ -708,7 +708,10 @@ func ExampleContext_UseCustomLoggingFormat() {
 	think := func() error {
 		err := solve("what was your face before your parents were born?")
 		if err != nil {
-			return Describe("though", "koan").Reason(err)
+			return Describe("task", "koan").Format(
+				err,
+				"unable to solve",
+			)
 		}
 
 		return nil
@@ -731,41 +734,45 @@ func ExampleContext_UseCustomLoggingFormat() {
 
 	// log represents custom logging function, which writes structured logs,
 	// like logrus in format [LEVEL] message: key1=value1 key2=value2
-	log := func(level string, message string, kv ...interface{}) {
-		fmt.Printf("[%s] %s:", level, message)
+	log := func(level string, reason Reason) {
+		var message string
 
-		for i := 0; i < len(kv); i += 2 {
-			fmt.Printf(" %s=%q", kv[i], kv[i+1])
+		switch reason := reason.(type) {
+		case Karma:
+			message += reason.GetMessage()
+			values := reason.GetContext().GetKeyValuePairs()
+
+			if len(values) > 0 {
+				message += " |"
+				for i := 0; i < len(values); i += 2 {
+					message += fmt.Sprintf(" %s=%q", values[i], values[i+1])
+				}
+			}
+		default:
+			message = fmt.Sprint(reason)
 		}
 
-		fmt.Println()
+		fmt.Printf("[%s] %s\n", level, message)
 	}
 
 	err := realize()
 	if err != nil {
 		if karma, ok := err.(Karma); ok {
 			// following call will write all nested errors
-			karma.Descend(func(karma Karma) {
-				log(
-					"ERROR",
-					karma.GetMessage(),
-					karma.GetContext().GetKeyValuePairs()...,
-				)
+			karma.Descend(func(reason Reason) {
+				log("ERROR", reason)
 			})
 
 			// this call will write only root-level error
-			log(
-				"FATAL",
-				karma.GetMessage(),
-				karma.GetContext().GetKeyValuePairs()...,
-			)
+			log("FATAL", karma)
 		}
 	}
 
 	// Output:
 	//
-	// [ERROR] no solution available for "what was your face before your parents were born?": though="koan"
-	// [FATAL] unable to attain realization: doing="realization" action="thinking"
+	// [ERROR] unable to solve | task="koan"
+	// [ERROR] no solution available for "what was your face before your parents were born?"
+	// [FATAL] unable to attain realization | doing="realization" action="thinking"
 }
 
 func output(lines ...string) string {
