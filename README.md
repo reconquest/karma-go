@@ -1,7 +1,3 @@
-# Inspiration
-
-We have been inspired by [implementation of Zen in Golang](https://github.com/reconquest/zen-go)
-
 # Contexts
 
 karma has contexts support, which allows to add arbitrary key-value fields
