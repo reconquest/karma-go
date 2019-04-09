@@ -597,6 +597,20 @@ func TestCustomHierarchicalError(t *testing.T) {
 	)
 }
 
+func TestDescend_DoNotEnterTrivialHierarchy(t *testing.T) {
+	test := assert.New(t)
+
+	err := Describe("everything", "has").Reason("simple reason")
+
+	message := err.GetMessage()
+
+	err.Descend(func(reason Reason) {
+		message += ": " + fmt.Sprint(reason)
+	})
+
+	test.Equal("simple reason", message)
+}
+
 func ExampleContext_MultipleKeyValues() {
 	foo := func(arg string) error {
 		return fmt.Errorf("unable to foo on %s", arg)

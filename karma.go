@@ -223,6 +223,12 @@ func (karma Karma) GetContext() *Context {
 
 // Descend calls specified callback for every nested hierarchical message.
 func (karma Karma) Descend(callback func(Reason)) {
+	// Do not descend into trivial cases, when message is reason, e.g. after
+	// Reason() call.
+	if karma.Message == "" {
+		return
+	}
+
 	for _, reason := range karma.GetReasons() {
 		switch reason := reason.(type) {
 		case Karma:
