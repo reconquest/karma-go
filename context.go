@@ -67,7 +67,7 @@ func (context *Context) Format(
 
 // Reason adds current context to the specified message. If message is not
 // hierarchical, it will be converted to such.
-func (context Context) Reason(reason Reason) Karma {
+func (context *Context) Reason(reason Reason) Karma {
 	if previous, ok := reason.(Karma); ok {
 		context.Walk(func(key string, value interface{}) {
 			previous.Context = previous.Context.Describe(key, value)
@@ -77,7 +77,7 @@ func (context Context) Reason(reason Reason) Karma {
 	} else {
 		return Karma{
 			Reason:  reason,
-			Context: &context,
+			Context: context,
 		}
 	}
 }

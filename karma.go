@@ -463,15 +463,19 @@ func formatReasons(karma Karma, reasons []Reason) string {
 			message.WriteString(splitter)
 		}
 
+		reason := stringReason(reason)
+
 		message.WriteString(strings.Replace(
-			stringReason(reason),
+			reason,
 			"\n",
 			"\n"+indentation,
 			-1,
 		))
 
 		if prolongate && index < len(reasons)-1 {
-			message.WriteString(prolongator)
+			if strings.Count(reason, "\n") > 0 {
+				message.WriteString(prolongator)
+			}
 		}
 	}
 

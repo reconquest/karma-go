@@ -345,6 +345,28 @@ func TestContext_CanAddToReasonError(t *testing.T) {
 	)
 }
 
+func TestContext_DoNotProlongSingleLineReasons(t *testing.T) {
+	test := assert.New(t)
+
+	test.EqualError(
+		Describe("resolver", "local").Describe("host", "example.com").
+			Format(
+				Describe("os", "linux").Reason(
+					"system error",
+				),
+				"unable to resolve",
+			),
+		output(
+			"unable to resolve",
+			"├─ system error",
+			"│  └─ os: linux",
+			"│",
+			"├─ resolver: local",
+			"└─ host: example.com",
+		),
+	)
+}
+
 func TestContext_CanUseNonStringValue(t *testing.T) {
 	test := assert.New(t)
 
@@ -609,6 +631,14 @@ func TestDescend_DoNotEnterTrivialHierarchy(t *testing.T) {
 	})
 
 	test.Equal("simple reason", message)
+}
+
+func TestContext_Reason_DoNotPanicOnNil(t *testing.T) {
+	test := assert.New(t)
+
+	var context *Context
+
+	test.NotNil(context.Reason("zen"))
 }
 
 func ExampleContext_MultipleKeyValues() {
