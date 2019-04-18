@@ -51,6 +51,24 @@ func (context *Context) Describe(
 	return &head
 }
 
+func (context *Context) tail() *Context {
+	if context == nil {
+		return nil
+	}
+
+	head := *context
+
+	pointer := &head
+	for pointer.Next != nil {
+		copy := *pointer.Next
+		pointer.Next = &copy
+
+		pointer = pointer.Next
+	}
+
+	return pointer
+}
+
 // Format produces context-rich hierarchical message, which will include all
 // previously declared context key-value pairs.
 func (context *Context) Format(
@@ -68,18 +86,18 @@ func (context *Context) Format(
 // Reason adds current context to the specified message. If message is not
 // hierarchical, it will be converted to such.
 func (context *Context) Reason(reason Reason) Karma {
-	if previous, ok := reason.(Karma); ok {
-		context.Walk(func(key string, value interface{}) {
-			previous.Context = previous.Context.Describe(key, value)
-		})
+	//if previous, ok := reason.(Karma); ok {
+	//    context.Walk(func(key string, value interface{}) {
+	//        previous.Context = previous.Context.Describe(key, value)
+	//    })
 
-		return previous
-	} else {
-		return Karma{
-			Reason:  reason,
-			Context: context,
-		}
+	//    return previous
+	//} else {
+	return Karma{
+		Reason:  reason,
+		Context: context,
 	}
+	//}
 }
 
 // Walk iterates over all key-value context pairs and calls specified

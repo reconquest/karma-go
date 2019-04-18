@@ -316,9 +316,8 @@ func TestContext_CanAddMultilineValue(t *testing.T) {
 		output(
 			"unable to resolve",
 			"├─ system error",
-			"│  └─ context: a",
-			"│     b",
-			"│",
+			"├─ context: a",
+			"│  b",
 			"└─ host: unable to connect",
 			"   temporary unavailable",
 		),
@@ -338,8 +337,7 @@ func TestContext_CanAddToReasonError(t *testing.T) {
 		output(
 			"unable to resolve",
 			"├─ system error",
-			"│  └─ os: linux",
-			"│",
+			"├─ os: linux",
 			"└─ host: example.com",
 		),
 	)
@@ -359,8 +357,7 @@ func TestContext_DoNotProlongSingleLineReasons(t *testing.T) {
 		output(
 			"unable to resolve",
 			"├─ system error",
-			"│  └─ os: linux",
-			"│",
+			"├─ os: linux",
 			"├─ resolver: local",
 			"└─ host: example.com",
 		),
@@ -702,8 +699,7 @@ func ExampleContext_NestedErrors() {
 	//
 	// unable to perform critical operation
 	// ├─ unable to foo on zen
-	// │  └─ arg: zen
-	// │
+	// ├─ arg: zen
 	// └─ operation: foo
 }
 
@@ -740,6 +736,45 @@ func ExampleContext_AddNestedDescribe() {
 	// unable to foo
 	// ├─ level: bar
 	// └─ level: baz
+}
+
+func ExampleContext_ProperLevel() {
+	root := func() error {
+		return errors.New("root cause")
+	}
+	foo := func() error {
+		err := root()
+		return Describe(
+			"foo_key",
+			"foo_value",
+		).Describe(
+			"foo_key2",
+			"foo_value2",
+		).Format(err, "root failed")
+	}
+	bar := func() error {
+		err := foo()
+		return Describe("bar_key", "bar_value").Format(err, "foo failed")
+	}
+
+	err := bar()
+
+	fmt.Println(
+		Format(Describe("top_key", "top_value").Reason(err), "it happened"),
+	)
+
+	// Output:
+	//
+	// it happened
+	// ├─ foo failed
+	// │  ├─ root failed
+	// │  │  ├─ root cause
+	// │  │  ├─ foo_key: foo_value
+	// │  │  └─ foo_key2: foo_value2
+	// │  │
+	// │  └─ bar_key: bar_value
+	// │
+	// └─ top_key: top_value
 }
 
 func ExampleContext_UseCustomLoggingFormat() {

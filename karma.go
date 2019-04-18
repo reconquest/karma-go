@@ -141,6 +141,8 @@ var ContextValueFormatter = func(value interface{}) string {
 // Karma returns hierarchical string representation. If no nested
 // message was specified, then only current message will be returned.
 func (karma Karma) String() string {
+	karma = collapse(karma)
+
 	karma.Context.Walk(func(name string, value interface{}) {
 		karma = Push(karma, Push(
 			name+": "+ContextValueFormatter(value),
@@ -164,6 +166,52 @@ func (karma Karma) String() string {
 				-1,
 			)
 	}
+}
+
+func collapse(parent Karma, reasons ...Karma) Karma {
+	if len(reasons) == 0 {
+		if reason, ok := parent.Reason.(Karma); ok {
+			return collapse(parent, reason)
+		}
+
+		if reasons, ok := parent.Reason.([]Karma); ok {
+			return collapse(parent, reasons...)
+		}
+
+		return parent
+	}
+
+	children := []Reason{}
+	pairs := []KeyValue{}
+	for _, reason := range reasons {
+		reason = collapse(reason)
+
+		if reason.Message == "" {
+			children = append(children, reason.GetReasons()...)
+			pairs = append(pairs, reason.GetContext().GetKeyValues()...)
+		} else {
+			children = append(children, reason)
+		}
+	}
+
+	parent.Reason = children
+
+	var context *Context
+	for i := len(pairs) - 1; i >= 0; i-- {
+		pair := pairs[i]
+		context = context.Describe(pair.Key, pair.Value)
+	}
+
+	if parent.Context == nil {
+		parent.Context = context
+	} else {
+		for _, pair := range parent.Context.GetKeyValues() {
+			context = context.Describe(pair.Key, pair.Value)
+		}
+		parent.Context = context
+	}
+
+	return parent
 }
 
 func getBranchIndentation() string {
