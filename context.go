@@ -89,7 +89,9 @@ func (context *Context) Walk(callback func(string, interface{})) {
 		return
 	}
 
-	callback(context.Key, context.Value)
+	if context.Key != "" || context.Value != nil {
+		callback(context.Key, context.Value)
+	}
 
 	if context.Next != nil {
 		context.Next.Walk(callback)

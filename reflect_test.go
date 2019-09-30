@@ -50,9 +50,6 @@ func TestReflect(t *testing.T) {
 	values := DescribeDeep("foo", foo).GetKeyValuePairs()
 	chunks := []string{}
 	for i := 0; i < len(values); i += 2 {
-		if i == 0 {
-			continue
-		}
 		chunks = append(chunks, fmt.Sprintf("%s=%v", values[i], values[i+1]))
 	}
 
