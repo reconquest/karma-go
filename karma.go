@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -135,7 +136,25 @@ var ContextValueFormatter = func(value interface{}) string {
 		}
 	}
 
-	return fmt.Sprint(value)
+	switch value := value.(type) {
+	case string:
+		return value
+	case fmt.Stringer:
+		return fmt.Sprint(value)
+	case bool:
+		return strconv.FormatBool(value)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return fmt.Sprint(value)
+	case float32, float64:
+		return fmt.Sprint(value)
+	default:
+		result, err := json.MarshalIndent(value, "", "  ")
+		if err != nil {
+			return fmt.Sprintf("unable to marshal value: %s", err)
+		}
+
+		return string(result)
+	}
 }
 
 // Karma returns hierarchical string representation. If no nested
