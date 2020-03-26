@@ -73,9 +73,7 @@ var (
 	BranchIndent = 3
 )
 
-var (
-	branchIndentation = "   "
-)
+var branchIndentation = "   "
 
 // Karma represents hierarchy message, linked with nested message.
 type Karma struct {
@@ -208,6 +206,15 @@ func stringReason(reason Reason) string {
 	}
 }
 
+// GetReasons returns nested messages
+func GetReasons(err error) []Reason {
+	if karma, ok := getKarma(err); ok {
+		return karma.GetReasons()
+	}
+
+	return []Reason{err}
+}
+
 // Error implements error interface, Karma can be returned as error.
 func (karma Karma) Error() string {
 	return karma.String()
@@ -332,7 +339,6 @@ func Push(reason Reason, reasons ...Reason) Karma {
 		Message: parent.Message,
 		Reason:  newReasons,
 	}
-
 }
 
 // Describe creates new context list, which can be used to produce context-rich
