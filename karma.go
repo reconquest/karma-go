@@ -102,6 +102,9 @@ type Hierarchical interface {
 	GetMessage() string
 }
 
+// assert that instance of Karma implements Hierarchical interface
+var _ Hierarchical = (*Karma)(nil)
+
 // Reason is either `error` or string.
 type Reason interface{}
 
