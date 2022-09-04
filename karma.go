@@ -3,13 +3,13 @@
 //
 // Transforms:
 //
-//         can't pull remote 'origin': can't run git fetch 'origin' 'refs/tokens/*:refs/tokens/*': exit status 128
+//	can't pull remote 'origin': can't run git fetch 'origin' 'refs/tokens/*:refs/tokens/*': exit status 128
 //
 // Into:
 //
-//         can't pull remote 'origin'
-//         └─ can't run git fetch 'origin' 'refs/tokens/*:refs/tokens/*'
-//            └─ exit status 128
+//	can't pull remote 'origin'
+//	└─ can't run git fetch 'origin' 'refs/tokens/*:refs/tokens/*'
+//	   └─ exit status 128
 package karma // import "github.com/reconquest/karma-go"
 
 import (
