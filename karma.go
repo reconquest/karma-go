@@ -509,3 +509,14 @@ func formatReasons(karma Karma, reasons []Reason) string {
 
 	return message.String()
 }
+
+// Collect function collects multiple errors into a hierarchical one.
+// It uses karma.Push to add all errors as children for the parent error.
+func Collect(parent Reason, err ...error) Reason {
+	for _, e := range err {
+		if e != nil {
+			parent = Push(parent, e)
+		}
+	}
+	return parent
+}

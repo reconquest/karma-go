@@ -819,6 +819,22 @@ func ExampleContext_UseCustomLoggingFormat() {
 	// [FATAL] unable to attain realization | doing="realization" action="thinking"
 }
 
+func ExampleCollect() {
+	err1 := errors.New("error 1")
+	err2 := errors.New("error 2")
+	err3 := errors.New("error 3")
+
+	collected := Collect("parent error", err1, err2, err3)
+
+	fmt.Println(collected)
+
+	// Output:
+	// parent error
+	// ├─ error 1
+	// ├─ error 2
+	// └─ error 3
+}
+
 func output(lines ...string) string {
 	return strings.Join(lines, "\n")
 }
