@@ -1,9 +1,11 @@
 package karma
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -833,6 +835,35 @@ func ExampleCollect() {
 	// ├─ error 1
 	// ├─ error 2
 	// └─ error 3
+}
+
+func ExampleUnwrap() {
+	err1 := errors.New("error 1")
+	err2 := errors.New("error 2")
+	err3 := errors.New("error 3")
+
+	collected := Collect("parent error", err1, err2, err3, context.Canceled)
+
+	fmt.Println("is canceled?", errors.Is(collected, context.Canceled))
+	fmt.Println("is error 1?", errors.Is(collected, err1))
+	fmt.Println("is error 2?", errors.Is(collected, err2))
+	fmt.Println("is error 3?", errors.Is(collected, err3))
+
+	fmt.Println("is eof?", errors.Is(collected, io.EOF))
+
+	fmt.Println("errors:", errors.Unwrap(collected))
+
+	// Output:
+	//is canceled? true
+	//is error 1? true
+	//is error 2? true
+	//is error 3? true
+	//is eof? false
+	//errors: parent error
+	//├─ error 1
+	//├─ error 2
+	//├─ error 3
+	//└─ context canceled
 }
 
 func output(lines ...string) string {

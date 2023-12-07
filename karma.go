@@ -528,3 +528,33 @@ func Collect(parent Reason, err ...error) Karma {
 
 	return top
 }
+
+func (karma Karma) Unwrap() error {
+	return weirdo{k: karma}
+}
+
+// well, someone they managed to come up with Unwrap() and Unwrap() []error
+// while we cannot do such methods a normal way, so this weirdo works as a layer
+type weirdo struct {
+	k Karma
+}
+
+func (weirdo weirdo) Unwrap() []error {
+	var result []error
+
+	weirdo.k.Descend(func(reason Reason) {
+		if err, ok := reason.(error); ok {
+			result = append(result, err)
+		}
+	})
+
+	return result
+}
+
+func (weirdo weirdo) Error() string {
+	if err, ok := weirdo.k.Reason.(error); ok {
+		return err.Error()
+	}
+
+	return weirdo.k.Error()
+}
