@@ -529,11 +529,15 @@ func Collect(parent Reason, err ...error) Karma {
 	return top
 }
 
+func (karma Karma) Is(target error) bool {
+	return Contains(karma, target)
+}
+
 func (karma Karma) Unwrap() error {
 	return weirdo{k: karma}
 }
 
-// well, someone they managed to come up with Unwrap() and Unwrap() []error
+// well, somehow they managed to come up with Unwrap() and Unwrap() []error
 // while we cannot do such methods a normal way, so this weirdo works as a layer
 type weirdo struct {
 	k Karma

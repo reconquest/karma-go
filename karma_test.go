@@ -866,6 +866,29 @@ func ExampleUnwrap() {
 	//└─ context canceled
 }
 
+func ExampleIs() {
+	collected :=
+		Format(
+			Format(
+				Describe("b", "2").Reason(
+					Format(
+						Format(
+							Describe("a", "1").Reason(context.Canceled), "internals",
+						),
+						"level3",
+					),
+				),
+				"level2",
+			),
+			"level1",
+		)
+
+	fmt.Println("is canceled?", errors.Is(collected, context.Canceled))
+
+	// Output:
+	//is canceled? true
+}
+
 func output(lines ...string) string {
 	return strings.Join(lines, "\n")
 }
