@@ -643,7 +643,7 @@ func TestContext_Reason_DoNotPanicOnNil(t *testing.T) {
 	test.NotNil(context.Reason("zen"))
 }
 
-func ExampleContext_MultipleKeyValues() {
+func ExampleContext_multipleKeyValues() {
 	foo := func(arg string) error {
 		return fmt.Errorf("unable to foo on %s", arg)
 	}
@@ -669,7 +669,7 @@ func ExampleContext_MultipleKeyValues() {
 	// └─ arg: zen
 }
 
-func ExampleContext_NestedErrors() {
+func ExampleContext_nestedErrors() {
 	foo := func(arg string) error {
 		return fmt.Errorf("unable to foo on %s", arg)
 	}
@@ -709,7 +709,7 @@ func ExampleContext_NestedErrors() {
 	// └─ operation: foo
 }
 
-func ExampleContext_AddNestedDescribe() {
+func ExampleContext_addNestedDescribe() {
 	foo := func() error {
 		return fmt.Errorf("unable to foo")
 	}
@@ -744,7 +744,7 @@ func ExampleContext_AddNestedDescribe() {
 	// └─ level: baz
 }
 
-func ExampleContext_UseCustomLoggingFormat() {
+func ExampleContext_useCustomLoggingFormat() {
 	// solve function represents deepest function in the call stack
 	solve := func(koan string) error {
 		return fmt.Errorf("no solution available for %q", koan)
